@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+from collections import deque
 import os
 import atexit
 
@@ -26,6 +27,8 @@ class DQNTrainer:
                  env=None,
                  model_provider=None,
                  memory=None,
+
+                 frame_buffer_size=1,
 
                  # Hyper parameters
                  gamma=0.85,
@@ -62,9 +65,20 @@ class DQNTrainer:
         if persistence_file:
             if os.path.exists(persistence_file):
                 self.model = tf.keras.models.load_model(persistence_file)
+
             atexit.register(lambda: self.save_model(persistence_file))
 
         self.copy_to_target()
+
+        self.frame_buffer = deque(maxlen=frame_buffer_size)
+        self.frame_buffer_size = frame_buffer_size
+
+    def buffer_to_input(self):
+        dims = (self.frame_buffer_size,) + self.env.observation_space.shape
+        result = np.zeros(dims)
+        for i, frame in enumerate(self.frame_buffer):
+            result[i] = frame
+        return np.expand_dims(result, axis=0)
 
     def copy_to_target(self):
         # unfortunately tf.keras.models.clone_model does not work after loading
@@ -106,25 +120,26 @@ class DQNTrainer:
         self.model.save(f)
 
     def train(self, episodes=1):
-        input_dims = [
-            x if x is not None else 1 for x in self.model.input_shape]
         for trial in range(episodes):
-            cur_state = self.env.reset().reshape(input_dims)
+            self.frame_buffer.append(self.env.reset())
 
             if self.save_every and trial % self.save_every == 0:
                 self.save_model(self.persistence_file)
 
             for step in range(500):
+                cur_state = self.buffer_to_input()
                 action = self.pick_action(cur_state)
-                new_state, reward, done, diagnostics = self.env.step(action)
-                new_state = new_state.reshape(input_dims)
+
+                observation, reward, done, diagnostics = self.env.step(action)
+
+                self.frame_buffer.append(observation)
+
+                new_state = self.buffer_to_input()
 
                 self.remember(cur_state, action, reward, new_state, done)
                 self.replay_train()
                 self.copy_to_target()
                 self.decrement_epsilon()
-
-                cur_state = new_state
 
                 if done:
                     break
