@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = '0.0.1'
+VERSION = open("VERSION", "r").read()
 
 setup(
     name='sota_dqn',
