@@ -23,9 +23,9 @@ jobs:
         --source
         --binary
         --out-dir dist/
-		- name: pypi-publish
-			if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-			uses: pypa/gh-action-pypi-publish@v1.3.1
-			with:
-				user: LukeWood
-				password: ${{ secrets.pypi_password }}
+    - name: pypi-publish
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@v1.3.1
+      with:
+        user: LukeWood
+        password: ${{ secrets.pypi_password }}
