@@ -34,13 +34,13 @@ _Cartpole-V1 before training_
 You can train a model for yourself quickly.
 
 ```
-python examples/dqn_train.py
+python examples/basic/dqn_train.py
 ```
 
 After the first checkpoint is saved you can test the model.
 
 ```
-python examples/dqn_inference.py
+python examples/basic/dqn_inference.py
 ```
 
 ![trained sample video](media/trained-cartpole.gif)
