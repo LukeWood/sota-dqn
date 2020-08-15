@@ -3,7 +3,7 @@ import gym
 from sota_dqn import DQNTrainer, BasicReplayMemory
 
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, InputLayer, Flatten
+from tensorflow.keras.layers import Dense, Flatten
 
 env = gym.make("CartPole-v1")
 frame_buffer = 3
