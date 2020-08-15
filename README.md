@@ -26,5 +26,7 @@ After the first checkpoint is saved you can test the model.
 python examples/dqn_inference.py
 ```
 
+<p align="center">
 ![sample video](media/cartpole.gif)
-Cartpole-V1 example gif
+<p>Cartpole-V1 example gif</p>
+</p>
