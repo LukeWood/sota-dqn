@@ -33,7 +33,7 @@ model = keras.Model(
 keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
 
 model.compile(
-    optimizer="adam",
+    optimizer="Adam",
     loss="mean_squared_error"
 )
 

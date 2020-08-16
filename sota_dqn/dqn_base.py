@@ -1,7 +1,7 @@
-import numpy as np
-
 from functools import reduce
 from collections import deque
+
+import tensorflow as tf
 
 
 class DQNBase:
@@ -22,10 +22,11 @@ class DQNBase:
     def buffer_to_input(self):
         result = []
         for i in range(self.frame_buffer_size):
-            result.append(np.zeros(self.input_shape))
+            result.append(tf.zeros(self.input_shape))
         for i, frame in enumerate(self.frame_buffer):
             result[i] = frame
-        return [np.expand_dims(r, axis=0) for r in result]
+        return [tf.expand_dims(i, axis=0) for i in result]
 
     def add_frame(self, frame):
-        self.frame_buffer.append(self.preprocess_observation(frame))
+        self.frame_buffer.append(tf.convert_to_tensor(
+            self.preprocess_observation(frame)))

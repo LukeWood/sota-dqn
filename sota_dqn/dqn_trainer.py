@@ -86,14 +86,10 @@ class DQNTrainer(DQNBase):
 
             atexit.register(lambda: self.save_model(persistence_file))
 
-        self.copy_to_target()
-
         self.target_model = None
         self.copy_to_target()
 
     def copy_to_target(self):
-        # unfortunately tf.keras.models.clone_model does not work after loading
-        # the model from persistence_file
         self.target_model = tf.keras.models.clone_model(self.model)
 
     def decrement_epsilon(self):

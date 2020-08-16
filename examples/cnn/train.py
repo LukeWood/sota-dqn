@@ -18,8 +18,8 @@ for i in range(frame_buffer):
     inputs.append(layer)
 
 conv_layer = Conv2D(
-        filters=16, kernel_size=(3, 3),
-        padding='same', activation='relu'
+    filters=16, kernel_size=(3, 3),
+    padding='same', activation='relu'
 )
 inputs_convoluted = [conv_layer(inp) for inp in inputs]
 
@@ -27,8 +27,8 @@ pool_layer = MaxPooling2D(pool_size=(3, 3))
 inputs_pooled = [pool_layer(i) for i in inputs_convoluted]
 
 conv_layer2 = Conv2D(
-        filters=16, kernel_size=(2, 2),
-        padding='same', activation='relu'
+    filters=16, kernel_size=(2, 2),
+    padding='same', activation='relu'
 )
 inputs_convoluted = [conv_layer2(i) for i in inputs_pooled]
 
@@ -58,15 +58,15 @@ model.compile(
 )
 
 dqn = DQNTrainer(
-        env=env,
-        model=model,
-        replay_batch_size=1,
-        input_shape=input_shape,
-        memory=BasicReplayMemory(2000),
-        frame_buffer_size=frame_buffer,
-        persistence_file="ms-pacman.model",
-        save_every=1,
-        reward_chart="media/ms-pacman-rewards.png"
+    env=env,
+    model=model,
+    replay_batch_size=32,
+    input_shape=input_shape,
+    memory=BasicReplayMemory(2000),
+    frame_buffer_size=frame_buffer,
+    persistence_file="ms-pacman.model",
+    save_every=1,
+    reward_chart="media/ms-pacman-rewards.png"
 )
 
 dqn.train(episodes=100)
