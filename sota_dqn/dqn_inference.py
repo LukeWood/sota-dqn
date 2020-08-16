@@ -5,16 +5,21 @@ from tensorflow.keras.models import load_model
 
 from collections import deque
 
+from .dqn_base import DQNBase
 
-class DQNInference:
+
+class DQNInference(DQNBase):
     def __init__(self,
                  env=None,
                  model=None,
                  epsilon=0,
                  load_from=None,
+                 observation_preprocessors=[],
                  frame_buffer_size=1,
                  warmup_actions=1
                  ):
+        super().__init__(observation_preprocessors=observation_preprocessors)
+
         if not env:
             raise "env required"
 
@@ -43,7 +48,7 @@ class DQNInference:
         return np.argmax(self.model.predict(state))
 
     def play_round(self, render=True, sleep=50):
-        self.frame_buffer.append(self.env.reset())
+        self.frame_buffer.append(self.preprocess_observation(self.env.reset()))
         done = False
         reward = 0
         random_actions_taken = 0
@@ -55,6 +60,7 @@ class DQNInference:
             else:
                 action = self.pick_action(state)
             observation, next_reward, done, _ = self.env.step(action)
+            observation = self.preprocess_observation(observation)
             self.frame_buffer.append(observation)
             reward = reward + next_reward
             if render:

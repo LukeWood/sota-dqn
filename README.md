@@ -1,4 +1,4 @@
-## State of the Art Deep Q Networks
+# State of the Art Deep Q Networks
 
 sota_dqn is an opinionated deep Q network library focused on productive implementation.
 
@@ -10,7 +10,11 @@ Other methods are under consideration for implementation such as:
 - https://www.hindawi.com/journals/mpe/2018/2129393/abs/
 - [Hindsight Experience Replay](http://papers.nips.cc/paper/7090-hindsight-experience-replay) are exposed through simple to use interfaces.
 
-## Installation
+# Examples
+- [basic DQN](examples/basic/)
+- [CNN on Image Inputs](examples/cnn/)
+
+# Installation
 sota_dqn is published on pypi by a CI/CD workflow
 ```
 pip install sota_dqn
@@ -23,7 +27,7 @@ cd sota-dqn &&
 pip install -r requirements.txt .
 ```
 
-## Quickstart
+# Quickstart
 Batteries included examples are held in `examples/`.
 The quickest example to get started with is `CartPole-v1`.
 
