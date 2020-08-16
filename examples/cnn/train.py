@@ -9,7 +9,7 @@ import tensorflow.keras as keras
 from sota_dqn import DQNTrainer, BasicReplayMemory
 
 env = gym.make("MsPacman-v0")
-frame_buffer = 4
+frame_buffer = 1
 
 input_shape = env.observation_space.shape
 inputs = []
@@ -37,7 +37,7 @@ inputs_pooled2 = [pool_layer2(i) for i in inputs_convoluted]
 
 flatten_layer = Flatten()
 flattened = [flatten_layer(i) for i in inputs_pooled2]
-merged = Concatenate()(flattened)
+merged = Concatenate()(flattened) if frame_buffer != 1 else flattened[0]
 
 d0 = Dense(48, activation='relu', name='dense0')(merged)
 d1 = Dense(24, activation='relu', name='dense1')(d0)
@@ -69,4 +69,5 @@ dqn = DQNTrainer(
     reward_chart="media/ms-pacman-rewards.png"
 )
 
-dqn.train(episodes=100)
+for x in range(11):
+    dqn.train(episodes=1+x, max_steps=51*(x+1), skip=(10-x), visualize=True)

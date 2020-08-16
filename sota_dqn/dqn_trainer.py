@@ -66,6 +66,7 @@ class DQNTrainer(DQNBase):
         self.env = env
         self.model = model
         self.memory = memory
+        self.all_rewards = []
 
         self.reward_chart = reward_chart
 
@@ -117,38 +118,31 @@ class DQNTrainer(DQNBase):
 
         samples = self.memory.sample(self.replay_batch_size)
 
-        states = []
-        targets = []
-
         for i, sample in enumerate(samples):
             state, action, reward, new_state, done = sample
-            states.append(state)
             target = self.target_model.predict(state)
             if done:
                 target[0][action] = reward
             else:
                 q_next = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + q_next*self.gamma
-            targets.append(target)
-
-        self.model.fit(states,
-                       targets, epochs=self.epochs_per_batch, verbose=0)
+            self.model.fit(state,
+                           target, epochs=self.epochs_per_batch, verbose=0)
 
     def save_model(self, f):
         print("Saving model to", f)
         self.model.save(f)
 
-    def train(self, episodes=1, max_steps=None):
-        all_rewards = []
+    def train(self, episodes=1, skip=0, max_steps=None, visualize=False):
         for trial in range(episodes):
-            print("Episode", trial)
             self.add_frame(self.env.reset())
 
             if trial % self.save_every == 0:
                 if self.persistence_file is not None:
                     self.save_model(self.persistence_file)
                 if self.reward_chart is not None:
-                    sns.lineplot(x=range(len(all_rewards)), y=all_rewards)
+                    sns.lineplot(x=range(len(self.all_rewards)),
+                                 y=self.all_rewards)
                     plt.savefig(self.reward_chart)
 
             steps = 0
@@ -156,10 +150,23 @@ class DQNTrainer(DQNBase):
             total_reward = 0
             while not done:
                 steps = steps + 1
+
                 cur_state = self.buffer_to_input()
                 action = self.pick_action(cur_state)
 
-                observation, reward, done, diagnostics = self.env.step(action)
+                reward = 0
+                for i in range(skip):
+                    observation, reward, done, diagnostics = self.env.step(
+                        action)
+                    reward = reward + reward
+                    if done:
+                        break
+
+                if visualize:
+                    self.env.render()
+
+                observation, freward, done, diagnostics = self.env.step(action)
+                reward = reward + freward
                 self.add_frame(observation)
 
                 new_state = self.buffer_to_input()
@@ -175,6 +182,5 @@ class DQNTrainer(DQNBase):
                 if max_steps is not None and steps > max_steps:
                     break
 
-            all_rewards.append(total_reward)
-
-        return all_rewards
+            self.all_rewards.append(total_reward)
+            print("Episode", trial, "Reward", total_reward)
