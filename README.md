@@ -38,8 +38,10 @@ pip install -r requirements.txt .
 ```
 
 # Quickstart
-Batteries included examples are held in `examples/`.
-The quickest example to get started with is `CartPole-v1`.
+Batteries included examples held in `examples/`.
+
+## Cartpole
+The quickest example to get started with is the [basic](examples/basic) which uses the `CartPole-v1` environment.
 
 ![random sample video](media/random-cartpole.gif)
 
@@ -67,3 +69,12 @@ python examples/basic/dqn_inference.py
 
 _Cartpole-V1 after training_
 
+## Ms Pacman
+This example builds on on the foundations set in the basic example.
+In the Ms Pacman example the raw image data is returned from the environment at each step.
+Preprocessing converts the images to gray scale to reduce the dimensionality of the input space.
+
+On top of this a convolutional model with the following architecture is used:
+![cnn architecture](media/cnn_model.png)
+
+_A GPU is highly recommended for training this model_.

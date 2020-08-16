@@ -66,8 +66,9 @@ class DQNTrainer(DQNBase):
         self.env = env
         self.model = model
         self.memory = memory
-        self.all_rewards = []
 
+        self.episodes_run = 0
+        self.all_rewards = []
         self.reward_chart = reward_chart
 
         self.gamma = gamma
@@ -158,6 +159,7 @@ class DQNTrainer(DQNBase):
                 for i in range(skip):
                     observation, reward, done, diagnostics = self.env.step(
                         action)
+                    self.add_frame(observation)
                     reward = reward + reward
                     if done:
                         break
@@ -183,4 +185,5 @@ class DQNTrainer(DQNBase):
                     break
 
             self.all_rewards.append(total_reward)
-            print("Episode", trial, "Reward", total_reward)
+            self.episodes_run = self.episodes_run + 1
+            print("Episode", self.episodes_run, "Reward", total_reward)
