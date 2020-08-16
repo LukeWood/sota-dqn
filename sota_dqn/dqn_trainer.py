@@ -6,6 +6,8 @@ import atexit
 
 from .dqn_base import DQNBase
 
+import seaborn as sns
+
 
 class DQNTrainer(DQNBase):
     '''
@@ -45,7 +47,9 @@ class DQNTrainer(DQNBase):
 
                  # Persistence
                  persistence_file=None,
-                 save_every=10
+                 save_every=10,
+
+                 reward_chart=None
                  ):
         super().__init__(
                 observation_preprocessors=observation_preprocessors,
@@ -58,6 +62,8 @@ class DQNTrainer(DQNBase):
         self.env = env
         self.model = model
         self.memory = memory
+
+        self.reward_chart = reward_chart
 
         self.gamma = gamma
         self.epsilon = epsilon
@@ -119,6 +125,7 @@ class DQNTrainer(DQNBase):
         self.model.save(f)
 
     def train(self, episodes=1, max_steps=None):
+        all_rewards = []
         for trial in range(episodes):
             self.add_frame(self.env.reset())
 
@@ -128,6 +135,7 @@ class DQNTrainer(DQNBase):
 
             steps = 0
             done = False
+            total_reward = 0
             while not done:
                 steps = steps + 1
                 cur_state = self.buffer_to_input()
@@ -143,7 +151,14 @@ class DQNTrainer(DQNBase):
                 self.copy_to_target()
                 self.decrement_epsilon()
 
+                total_reward = total_reward + reward
                 if done:
                     break
                 if max_steps is not None and steps > max_steps:
                     break
+
+            all_rewards.append(total_reward)
+            if self.reward_chart is not None:
+                plot = sns.lineplot(x=range(len(all_rewards)), y=all_rewards)
+                plot.savefig(self.reward_chart)
+        return all_rewards
