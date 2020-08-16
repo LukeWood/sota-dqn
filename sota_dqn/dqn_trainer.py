@@ -47,7 +47,7 @@ class DQNTrainer(DQNBase):
                  epsilon_decay=0.998,
                  tau=0.12,
                  replay_batch_size=64,
-                 epochs_per_batch=3,
+                 epochs_per_batch=1,
 
                  # Persistence
                  persistence_file=None,
@@ -88,11 +88,16 @@ class DQNTrainer(DQNBase):
 
             atexit.register(lambda: self.save_model(persistence_file))
 
-        self.target_model = None
+        # tf.keras.models.clone_model does not copy weights
+        self.target_model = tf.keras.models.clone_model(self.model)
         self.copy_to_target()
 
     def copy_to_target(self):
-        self.target_model = tf.keras.models.clone_model(self.model)
+        weights = self.model.get_weights()
+        target_weights = self.target_model.get_weights()
+        for i in range(len(target_weights)):
+            target_weights[i] = weights[i]
+        self.target_model.set_weights(target_weights)
 
     def decrement_epsilon(self):
         self.epsilon = max(self.epsilon_decay*self.epsilon, self.epsilon_min)
@@ -124,7 +129,8 @@ class DQNTrainer(DQNBase):
             else:
                 q_next = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + q_next*self.gamma
-            targets.append(tf.convert_to_tensor(target))
+            targets.append(target)
+
         self.model.fit(states,
                        targets, epochs=self.epochs_per_batch, verbose=0)
 

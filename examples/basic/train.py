@@ -34,19 +34,20 @@ keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
 
 model.compile(
     optimizer="Adam",
-    loss="mean_squared_error"
+    loss=[keras.losses.BinaryCrossentropy(from_logits=True)]
 )
 
 dqn = DQNTrainer(
     env=env,
     model=model,
-    replay_batch_size=12,
+    replay_batch_size=64,
+    epochs_per_batch=1,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
     frame_buffer_size=frame_buffer,
     persistence_file="cartpole.model",
     reward_chart="media/cartpole_rewards.png",
-    save_every=3
+    save_every=1
 )
 
-dqn.train(episodes=100)
+dqn.train(episodes=10)
