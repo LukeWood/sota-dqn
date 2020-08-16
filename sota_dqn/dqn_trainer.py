@@ -79,7 +79,7 @@ class DQNTrainer(DQNBase):
         self.frame_buffer_size = frame_buffer_size
 
     def buffer_to_input(self):
-        dims = (self.frame_buffer_size,) + self.env.observation_space.shape
+        dims = self.model.input_shape[1:]
         result = np.zeros(dims)
         for i, frame in enumerate(self.frame_buffer):
             result[i] = frame
@@ -129,8 +129,9 @@ class DQNTrainer(DQNBase):
             self.frame_buffer.append(
                 self.preprocess_observation(self.env.reset()))
 
-            if self.save_every and trial % self.save_every == 0:
-                self.save_model(self.persistence_file)
+            if self.save_every is not None and trial % self.save_every == 0:
+                if self.persistence_file is not None:
+                    self.save_model(self.persistence_file)
 
             steps = 0
             done = False
