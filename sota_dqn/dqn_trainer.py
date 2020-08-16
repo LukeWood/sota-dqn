@@ -36,7 +36,7 @@ class DQNTrainer:
                  epsilon_min=0.01,
                  epsilon_decay=0.998,
                  tau=0.12,
-                 replay_batch_size=16,
+                 replay_batch_size=64,
 
                  # Persistence
                  persistence_file=None,

@@ -11,7 +11,7 @@ class BasicReplayMemory:
         if len(self.memory) < self.size:
             self.memory.append(frame)
         else:
-            self.memory[self.size % self.index] = frame
+            self.memory[self.index % self.size] = frame
             self.index = self.index + 1
 
     def sample(self, batch_size):
