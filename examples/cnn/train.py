@@ -35,13 +35,13 @@ inputs_convoluted = [conv_layer2(i) for i in inputs_pooled]
 pool_layer2 = MaxPooling2D(pool_size=(2, 2))
 inputs_pooled2 = [pool_layer2(i) for i in inputs_convoluted]
 
-flattened = [Flatten()(i) for i in inputs_pooled2]
+flatten_layer = Flatten()
+flattened = [flatten_layer(i) for i in inputs_pooled2]
 merged = Concatenate()(flattened)
 
 d0 = Dense(48, activation='relu', name='dense0')(merged)
 d1 = Dense(24, activation='relu', name='dense1')(d0)
 
-print(env.action_space)
 outputs = \
     Dense(env.action_space.n, activation="relu", name="output_dense")(d1)
 
@@ -60,12 +60,13 @@ model.compile(
 dqn = DQNTrainer(
         env=env,
         model=model,
-        replay_batch_size=12,
+        replay_batch_size=1,
         input_shape=input_shape,
         memory=BasicReplayMemory(2000),
         frame_buffer_size=frame_buffer,
         persistence_file="ms-pacman.model",
-        save_every=3
+        save_every=1,
+        reward_chart="media/ms-pacman-rewards.png"
 )
 
 dqn.train(episodes=100)

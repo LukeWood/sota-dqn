@@ -45,6 +45,7 @@ dqn = DQNTrainer(
         memory=BasicReplayMemory(2000),
         frame_buffer_size=frame_buffer,
         persistence_file="cartpole.model",
+        reward_chart="media/cartpole_rewards.png",
         save_every=3
 )
 

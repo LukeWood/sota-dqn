@@ -7,7 +7,9 @@ import atexit
 from .dqn_base import DQNBase
 
 import seaborn as sns
-
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 
 class DQNTrainer(DQNBase):
     '''
@@ -129,9 +131,12 @@ class DQNTrainer(DQNBase):
         for trial in range(episodes):
             self.add_frame(self.env.reset())
 
-            if self.save_every is not None and trial % self.save_every == 0:
+            if trial % self.save_every == 0:
                 if self.persistence_file is not None:
                     self.save_model(self.persistence_file)
+                if self.reward_chart is not None:
+                    sns.lineplot(x=range(len(all_rewards)), y=all_rewards)
+                    plt.savefig(self.reward_chart)
 
             steps = 0
             done = False
@@ -158,7 +163,5 @@ class DQNTrainer(DQNBase):
                     break
 
             all_rewards.append(total_reward)
-            if self.reward_chart is not None:
-                plot = sns.lineplot(x=range(len(all_rewards)), y=all_rewards)
-                plot.savefig(self.reward_chart)
+
         return all_rewards
