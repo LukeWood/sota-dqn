@@ -38,15 +38,15 @@ model.compile(
 )
 
 dqn = DQNTrainer(
-        env=env,
-        model=model,
-        replay_batch_size=12,
-        input_shape=input_shape,
-        memory=BasicReplayMemory(2000),
-        frame_buffer_size=frame_buffer,
-        persistence_file="cartpole.model",
-        reward_chart="media/cartpole_rewards.png",
-        save_every=3
+    env=env,
+    model=model,
+    replay_batch_size=12,
+    input_shape=input_shape,
+    memory=BasicReplayMemory(2000),
+    frame_buffer_size=frame_buffer,
+    persistence_file="cartpole.model",
+    reward_chart="media/cartpole_rewards.png",
+    save_every=3
 )
 
 dqn.train(episodes=100)

@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 
@@ -9,7 +10,7 @@ from .dqn_base import DQNBase
 import seaborn as sns
 import matplotlib as mpl
 mpl.use('Agg')
-import matplotlib.pyplot as plt
+
 
 class DQNTrainer(DQNBase):
     '''
@@ -54,10 +55,10 @@ class DQNTrainer(DQNBase):
                  reward_chart=None
                  ):
         super().__init__(
-                observation_preprocessors=observation_preprocessors,
-                input_shape=input_shape,
-                frame_buffer_size=frame_buffer_size
-                )
+            observation_preprocessors=observation_preprocessors,
+            input_shape=input_shape,
+            frame_buffer_size=frame_buffer_size
+        )
         if not env:
             raise "env required"
 
@@ -129,6 +130,7 @@ class DQNTrainer(DQNBase):
     def train(self, episodes=1, max_steps=None):
         all_rewards = []
         for trial in range(episodes):
+            print("Episode", trial)
             self.add_frame(self.env.reset())
 
             if trial % self.save_every == 0:
