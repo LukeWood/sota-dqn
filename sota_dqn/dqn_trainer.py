@@ -47,6 +47,7 @@ class DQNTrainer(DQNBase):
                  epsilon_decay=0.998,
                  tau=0.12,
                  replay_batch_size=64,
+                 epochs_per_batch=3,
 
                  # Persistence
                  persistence_file=None,
@@ -74,6 +75,7 @@ class DQNTrainer(DQNBase):
         self.epsilon_decay = epsilon_decay
         self.tau = tau
         self.replay_batch_size = replay_batch_size
+        self.epochs_per_batch = epochs_per_batch
 
         self.training = True
 
@@ -109,15 +111,22 @@ class DQNTrainer(DQNBase):
             return
 
         samples = self.memory.sample(self.replay_batch_size)
-        for sample in samples:
+
+        states = []
+        targets = []
+
+        for i, sample in enumerate(samples):
             state, action, reward, new_state, done = sample
+            states.append(state)
             target = self.target_model.predict(state)
             if done:
                 target[0][action] = reward
             else:
                 q_next = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + q_next*self.gamma
-            self.model.fit(state, target, epochs=1, verbose=0)
+            targets.append(tf.convert_to_tensor(target))
+        self.model.fit(states,
+                       targets, epochs=self.epochs_per_batch, verbose=0)
 
     def save_model(self, f):
         print("Saving model to", f)
