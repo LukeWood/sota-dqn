@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-from collections import deque
 import os
 import atexit
 
@@ -27,8 +26,10 @@ class DQNTrainer(DQNBase):
 
     def __init__(self,
                  env=None,
-                 model_provider=None,
+                 model=None,
                  memory=None,
+
+                 input_shape=None,
 
                  frame_buffer_size=1,
 
@@ -46,13 +47,16 @@ class DQNTrainer(DQNBase):
                  persistence_file=None,
                  save_every=10
                  ):
-        super().__init__(observation_preprocessors=observation_preprocessors)
+        super().__init__(
+                observation_preprocessors=observation_preprocessors,
+                input_shape=input_shape,
+                frame_buffer_size=frame_buffer_size
+                )
         if not env:
             raise "env required"
 
         self.env = env
-        self.model = model_provider()
-        self.target_model = model_provider()
+        self.model = model
         self.memory = memory
 
         self.gamma = gamma
@@ -75,24 +79,13 @@ class DQNTrainer(DQNBase):
 
         self.copy_to_target()
 
-        self.frame_buffer = deque(maxlen=frame_buffer_size)
-        self.frame_buffer_size = frame_buffer_size
-
-    def buffer_to_input(self):
-        dims = self.model.input_shape[1:]
-        result = np.zeros(dims)
-        for i, frame in enumerate(self.frame_buffer):
-            result[i] = frame
-        return np.expand_dims(result, axis=0)
+        self.target_model = None
+        self.copy_to_target()
 
     def copy_to_target(self):
         # unfortunately tf.keras.models.clone_model does not work after loading
         # the model from persistence_file
-        weights = self.model.get_weights()
-        target_weights = self.target_model.get_weights()
-        for i in range(len(target_weights)):
-            target_weights[i] = weights[i]
-        self.target_model.set_weights(target_weights)
+        self.target_model = tf.keras.models.clone_model(self.model)
 
     def decrement_epsilon(self):
         self.epsilon = max(self.epsilon_decay*self.epsilon, self.epsilon_min)
@@ -103,7 +96,8 @@ class DQNTrainer(DQNBase):
     def pick_action(self, state):
         if self.training and np.random.random() < self.epsilon:
             return self.env.action_space.sample()
-        return np.argmax(self.model.predict(state))
+        res = self.model.predict(state)
+        return np.argmax(res)
 
     def replay_train(self):
         if len(self.memory) < self.replay_batch_size:
@@ -126,8 +120,7 @@ class DQNTrainer(DQNBase):
 
     def train(self, episodes=1, max_steps=None):
         for trial in range(episodes):
-            self.frame_buffer.append(
-                self.preprocess_observation(self.env.reset()))
+            self.add_frame(self.env.reset())
 
             if self.save_every is not None and trial % self.save_every == 0:
                 if self.persistence_file is not None:
@@ -141,9 +134,7 @@ class DQNTrainer(DQNBase):
                 action = self.pick_action(cur_state)
 
                 observation, reward, done, diagnostics = self.env.step(action)
-                observation = self.preprocess_observation(observation)
-
-                self.frame_buffer.append(observation)
+                self.add_frame(observation)
 
                 new_state = self.buffer_to_input()
 
@@ -154,5 +145,5 @@ class DQNTrainer(DQNBase):
 
                 if done:
                     break
-                if max_steps and steps > max_steps:
+                if max_steps is not None and steps > max_steps:
                     break

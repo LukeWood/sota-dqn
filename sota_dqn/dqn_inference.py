@@ -11,14 +11,18 @@ from .dqn_base import DQNBase
 class DQNInference(DQNBase):
     def __init__(self,
                  env=None,
-                 model=None,
+                 input_shape=None,
                  epsilon=0,
                  load_from=None,
                  observation_preprocessors=[],
                  frame_buffer_size=1,
                  warmup_actions=1
                  ):
-        super().__init__(observation_preprocessors=observation_preprocessors)
+        super().__init__(
+                observation_preprocessors=observation_preprocessors,
+                frame_buffer_size=frame_buffer_size,
+                input_shape=input_shape
+                )
 
         if not env:
             raise "env required"
@@ -27,20 +31,10 @@ class DQNInference(DQNBase):
         self.env = env
         self.warmup_actions = warmup_actions
 
-        if load_from:
-            self.model = load_model(load_from)
-        else:
-            self.model = model
+        self.model = load_model(load_from)
 
         self.frame_buffer = deque(maxlen=frame_buffer_size)
         self.frame_buffer_size = frame_buffer_size
-
-    def buffer_to_input(self):
-        dims = (self.frame_buffer_size,) + self.env.observation_space.shape
-        result = np.zeros(dims)
-        for i, frame in enumerate(self.frame_buffer):
-            result[i] = frame
-        return np.expand_dims(result, axis=0)
 
     def pick_action(self, state):
         if np.random.random() < self.epsilon:
@@ -48,7 +42,7 @@ class DQNInference(DQNBase):
         return np.argmax(self.model.predict(state))
 
     def play_round(self, render=True, sleep=50):
-        self.frame_buffer.append(self.preprocess_observation(self.env.reset()))
+        self.add_frame(self.env.reset())
         done = False
         reward = 0
         random_actions_taken = 0
@@ -60,8 +54,7 @@ class DQNInference(DQNBase):
             else:
                 action = self.pick_action(state)
             observation, next_reward, done, _ = self.env.step(action)
-            observation = self.preprocess_observation(observation)
-            self.frame_buffer.append(observation)
+            self.add_frame(observation)
             reward = reward + next_reward
             if render:
                 self.env.render()
