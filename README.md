@@ -65,5 +65,5 @@ python examples/basic/dqn_inference.py
 
 ![trained sample video](media/trained-cartpole.gif)
 
-_Trained Cartpole-V1 after training_
+_Cartpole-V1 after training_
 
