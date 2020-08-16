@@ -19,10 +19,10 @@ class DQNInference(DQNBase):
                  warmup_actions=1
                  ):
         super().__init__(
-                observation_preprocessors=observation_preprocessors,
-                frame_buffer_size=frame_buffer_size,
-                input_shape=input_shape
-                )
+            observation_preprocessors=observation_preprocessors,
+            frame_buffer_size=frame_buffer_size,
+            input_shape=input_shape
+        )
 
         if not env:
             raise "env required"
@@ -33,12 +33,11 @@ class DQNInference(DQNBase):
 
         self.model = load_model(load_from)
 
-        self.frame_buffer = deque(maxlen=frame_buffer_size)
-        self.frame_buffer_size = frame_buffer_size
-
     def pick_action(self, state):
         if np.random.random() < self.epsilon:
             return self.env.action_space.sample()
+        print(self.model.predict(state))
+        print(np.argmax(self.model.predict(state)))
         return np.argmax(self.model.predict(state))
 
     def play_round(self, render=True, sleep=50):

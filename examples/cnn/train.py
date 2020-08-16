@@ -11,7 +11,7 @@ from preprocessing import grayscale
 from sota_dqn import DQNTrainer, BasicReplayMemory
 
 env = gym.make("MsPacman-v0")
-frame_buffer = 3
+frame_buffer = 4
 
 input_shape = env.observation_space.shape[:-1]
 inputs = []
@@ -46,9 +46,10 @@ merged = Concatenate()(flattened) if frame_buffer != 1 else flattened[0]
 
 d0 = Dense(48, activation='relu', name='dense0')(merged)
 d1 = Dense(24, activation='relu', name='dense1')(d0)
+d2 = Dense(24, activation='relu', name='dense2')(d1)
 
 outputs = \
-    Dense(env.action_space.n, activation="relu", name="output_dense")(d1)
+    Dense(env.action_space.n, activation="relu", name="output_dense")(d2)
 
 model = keras.Model(
     inputs=inputs,
@@ -66,7 +67,7 @@ dqn = DQNTrainer(
     env=env,
     model=model,
     observation_preprocessors=[grayscale],
-    replay_batch_size=32,
+    replay_batch_size=12,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
     frame_buffer_size=frame_buffer,
@@ -75,6 +76,4 @@ dqn = DQNTrainer(
     reward_chart="media/ms-pacman-rewards.png"
 )
 
-for x in range(11):
-    dqn.train(episodes=1+x, max_steps=51*(x+1),
-              skip=max(0, 5-x), visualize=True)
+dqn.train(100)
