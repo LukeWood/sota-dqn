@@ -157,10 +157,10 @@ class DQNTrainer(DQNBase):
 
                 reward = 0
                 for i in range(skip):
-                    observation, reward, done, diagnostics = self.env.step(
+                    observation, nreward, done, diagnostics = self.env.step(
                         action)
                     self.add_frame(observation)
-                    reward = reward + reward
+                    reward = reward + nreward
                     if done:
                         break
 
