@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+*.model
 .DS_Store
 cartpole.model/
 __pycache__/

@@ -5,8 +5,10 @@ from collections import deque
 import os
 import atexit
 
+from .dqn_base import DQNBase
 
-class DQNTrainer:
+
+class DQNTrainer(DQNBase):
     '''
             DQNTrainer trains a DQN Network.
 
@@ -30,6 +32,8 @@ class DQNTrainer:
 
                  frame_buffer_size=1,
 
+                 observation_preprocessors=[],
+
                  # Hyper parameters
                  gamma=0.85,
                  epsilon=1.0,
@@ -42,6 +46,7 @@ class DQNTrainer:
                  persistence_file=None,
                  save_every=10
                  ):
+        super().__init__(observation_preprocessors=observation_preprocessors)
         if not env:
             raise "env required"
 
@@ -119,18 +124,23 @@ class DQNTrainer:
         print("Saving model to", f)
         self.model.save(f)
 
-    def train(self, episodes=1):
+    def train(self, episodes=1, max_steps=None):
         for trial in range(episodes):
-            self.frame_buffer.append(self.env.reset())
+            self.frame_buffer.append(
+                self.preprocess_observation(self.env.reset()))
 
             if self.save_every and trial % self.save_every == 0:
                 self.save_model(self.persistence_file)
 
-            for step in range(500):
+            steps = 0
+            done = False
+            while not done:
+                steps = steps + 1
                 cur_state = self.buffer_to_input()
                 action = self.pick_action(cur_state)
 
                 observation, reward, done, diagnostics = self.env.step(action)
+                observation = self.preprocess_observation(observation)
 
                 self.frame_buffer.append(observation)
 
@@ -142,4 +152,6 @@ class DQNTrainer:
                 self.decrement_epsilon()
 
                 if done:
+                    break
+                if max_steps and steps > max_steps:
                     break
