@@ -37,6 +37,11 @@ _Cartpole-V1 before training_
 
 You can train a model for yourself quickly.
 
+The model has the following architecture:
+
+![model architecture](media/basic_model.png)
+
+
 ```
 python examples/basic/dqn_train.py
 ```

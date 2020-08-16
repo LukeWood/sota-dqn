@@ -1,35 +1,51 @@
 import gym
 
-from sota_dqn import DQNTrainer, BasicReplayMemory
+from tensorflow.keras import Input
+from tensorflow.keras.layers import Concatenate, Dense
+import tensorflow.keras as keras
 
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Flatten
+from sota_dqn import DQNTrainer, BasicReplayMemory
 
 env = gym.make("CartPole-v1")
 frame_buffer = 3
 
+input_shape = env.observation_space.shape
 
-def model_provider():
-    model = Sequential()
-    model.add(Dense(24, batch_size=1, input_shape=(frame_buffer,) +
-                    env.observation_space.shape, activation="relu"))
-    model.add(Dense(48, activation="relu"))
-    model.add(Dense(24, activation="relu"))
+inputs = []
+for i in range(frame_buffer):
+    layer = Input(shape=input_shape)
+    inputs.append(layer)
 
-    # Required for any frame stacking models
-    model.add(Flatten())
+merged = Concatenate()(inputs)
 
-    # Required for any DQN
-    model.add(Dense(env.action_space.n))
-    model.compile(loss="mean_squared_error",
-                  optimizer="Adam")
-    return model
+d0 = Dense(24, activation="relu", name="dense0")(merged)
+d1 = Dense(48, activation="relu", name="dense1")(d0)
+d2 = Dense(24, activation="relu", name="dense2")(d1)
 
+outputs = \
+    Dense(env.action_space.n, activation="relu", name="output_dense")(d2)
 
-dqn = DQNTrainer(env=env,
-                 model_provider=model_provider,
-                 memory=BasicReplayMemory(size=2000),
-                 frame_buffer_size=frame_buffer,
-                 persistence_file="cartpole.model")
+model = keras.Model(
+    inputs=inputs,
+    outputs=outputs
+)
+
+keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
+
+model.compile(
+    optimizer="adam",
+    loss="mean_squared_error"
+)
+
+dqn = DQNTrainer(
+        env=env,
+        model=model,
+        replay_batch_size=12,
+        input_shape=input_shape,
+        memory=BasicReplayMemory(2000),
+        frame_buffer_size=frame_buffer,
+        persistence_file="cartpole.model",
+        save_every=3
+)
 
 dqn.train(episodes=100)
