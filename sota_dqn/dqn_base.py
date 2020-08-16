@@ -1,7 +1,7 @@
-import numpy as np
-
 from functools import reduce
 from collections import deque
+
+import numpy as np
 
 
 class DQNBase:
@@ -25,7 +25,8 @@ class DQNBase:
             result.append(np.zeros(self.input_shape))
         for i, frame in enumerate(self.frame_buffer):
             result[i] = frame
-        return [np.expand_dims(r, axis=0) for r in result]
+        return [np.expand_dims(i, axis=0) for i in result]
 
     def add_frame(self, frame):
-        self.frame_buffer.append(self.preprocess_observation(frame))
+        self.frame_buffer.append(
+            self.preprocess_observation(frame))
