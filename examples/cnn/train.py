@@ -81,8 +81,8 @@ dqn = DQNTrainer(
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
     frame_buffer_size=frame_buffer,
-    episode_callbacks=[clear_console, track_reward,
-                       plot, save_model, append_row, print_table]
+    post_episode_callbacks=[clear_console, track_reward,
+                            plot, save_model, append_row, print_table]
 )
 
 dqn.train(100, skip=5, max_steps=500)

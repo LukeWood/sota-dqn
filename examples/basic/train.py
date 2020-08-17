@@ -1,3 +1,5 @@
+import numpy as np
+import time
 from sota_dqn import DQNTrainer, BasicReplayMemory
 import gym
 import os
@@ -63,18 +65,21 @@ keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
 atexit.register(lambda: model.save(persistence_file))
 
 
+t = 0
+all_times = []
+
+
 dqn = DQNTrainer(
     env=env,
     model=model,
     replay_batch_size=64,
     epochs_per_batch=1,
-    epsilon_decay=0.99,
-    epsilon=0.1,
+    epsilon_decay=0.999,
     frame_buffer_size=frame_buffer,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
-    episode_callbacks=[clear_console, track_reward,
-                       plot, save_model, append_row, print_table]
+    post_episode_callbacks=[clear_console, track_reward,
+                            plot, save_model, append_row, print_table]
 )
 
-dqn.train(episodes=40)
+dqn.train(episodes=40, max_steps=500)
