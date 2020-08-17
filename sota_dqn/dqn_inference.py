@@ -1,10 +1,6 @@
 import numpy as np
 import time
 
-from tensorflow.keras.models import load_model
-
-from collections import deque
-
 from .dqn_base import DQNBase
 
 
@@ -12,8 +8,8 @@ class DQNInference(DQNBase):
     def __init__(self,
                  env=None,
                  input_shape=None,
+                 model=None,
                  epsilon=0,
-                 load_from=None,
                  observation_preprocessors=[],
                  frame_buffer_size=1,
                  warmup_actions=1
@@ -31,7 +27,7 @@ class DQNInference(DQNBase):
         self.env = env
         self.warmup_actions = warmup_actions
 
-        self.model = load_model(load_from)
+        self.model = model
 
     def pick_action(self, state):
         if np.random.random() < self.epsilon:

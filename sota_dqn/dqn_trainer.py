@@ -1,15 +1,7 @@
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 
-import os
-import atexit
-
 from .dqn_base import DQNBase
-
-import seaborn as sns
-import matplotlib as mpl
-mpl.use('Agg')
 
 
 class DQNTrainer(DQNBase):
@@ -25,8 +17,6 @@ class DQNTrainer(DQNBase):
                     epsilon_decay: the factor to multiply epsilon by
                     tau: tau hyperparameter
                     replay_batch_size: batch size for use in replay training
-                    persistence_file: file to save the model to - required
-                    save_every: automatically save the model every N iterations
     '''
 
     def __init__(self,
@@ -39,6 +29,7 @@ class DQNTrainer(DQNBase):
                  frame_buffer_size=1,
 
                  observation_preprocessors=[],
+                 episode_callbacks=[],
 
                  # Hyper parameters
                  gamma=0.85,
@@ -48,12 +39,6 @@ class DQNTrainer(DQNBase):
                  tau=0.12,
                  replay_batch_size=64,
                  epochs_per_batch=1,
-
-                 # Persistence
-                 persistence_file=None,
-                 save_every=10,
-
-                 reward_chart=None
                  ):
         super().__init__(
             observation_preprocessors=observation_preprocessors,
@@ -69,7 +54,7 @@ class DQNTrainer(DQNBase):
 
         self.episodes_run = 0
         self.all_rewards = []
-        self.reward_chart = reward_chart
+        self.average_reward = 0
 
         self.gamma = gamma
         self.epsilon = epsilon
@@ -79,16 +64,7 @@ class DQNTrainer(DQNBase):
         self.replay_batch_size = replay_batch_size
         self.epochs_per_batch = epochs_per_batch
 
-        self.training = True
-
-        self.persistence_file = persistence_file
-        self.save_every = save_every
-
-        if persistence_file:
-            if os.path.exists(persistence_file):
-                self.model = tf.keras.models.load_model(persistence_file)
-
-            atexit.register(lambda: self.save_model(persistence_file))
+        self.episode_callbacks = episode_callbacks
 
         # tf.keras.models.clone_model does not copy weights
         self.target_model = tf.keras.models.clone_model(self.model)
@@ -108,7 +84,7 @@ class DQNTrainer(DQNBase):
         self.memory.save((state, action, reward, new_state, done))
 
     def pick_action(self, state):
-        if self.training and np.random.random() < self.epsilon:
+        if np.random.random() < self.epsilon:
             return self.env.action_space.sample()
         res = self.model.predict(state)
         return np.argmax(res)
@@ -130,23 +106,12 @@ class DQNTrainer(DQNBase):
             self.model.fit(state,
                            target, epochs=self.epochs_per_batch, verbose=0)
 
-    def save_model(self, f):
-        print("Saving model to", f)
-        self.model.save(f)
-
-    def train(self, episodes=1, skip=0, max_steps=None, visualize=False):
+    def train(self, episodes=1, skip=0, max_steps=None, visualize=False,
+              print_every=5):
         for trial in range(episodes):
             self.add_frame(self.env.reset())
 
-            if trial % self.save_every == 0:
-                if self.persistence_file is not None:
-                    self.save_model(self.persistence_file)
-                if self.reward_chart is not None:
-                    sns.lineplot(x=range(len(self.all_rewards)),
-                                 y=self.all_rewards)
-                    plt.savefig(self.reward_chart)
-
-            steps = 0
+            steps = 1
             done = False
             total_reward = 0
             while not done:
@@ -184,6 +149,7 @@ class DQNTrainer(DQNBase):
                 if max_steps is not None and steps > max_steps:
                     break
 
-            self.all_rewards.append(total_reward)
             self.episodes_run = self.episodes_run + 1
-            print("Episode", self.episodes_run, "Reward", total_reward)
+
+            for callback in self.episode_callbacks:
+                callback(self, self.episodes_run, total_reward)

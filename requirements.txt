@@ -50,7 +50,6 @@ rsa==4.6
 scipy==1.4.1
 seaborn==0.10.1
 six==1.15.0
--e git+https://github.com/LukeWood/sota-dqn.git@dddca62184cf567eb8d4b639f87f9a0a751172c4#egg=sota_dqn
 tensorboard==2.3.0
 tensorboard-plugin-wit==1.7.0
 tensorflow==2.3.0

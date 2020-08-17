@@ -1,10 +1,15 @@
 import gym
-
+import tensorflow as tf
 from sota_dqn import DQNInference
+
+from constants import persistence_file
 
 env = gym.make("CartPole-v1")
 
-dqn = DQNInference(env=env, load_from="cartpole.model",
+model = tf.keras.models.load_model(persistence_file)
+
+dqn = DQNInference(env=env,
+                   model=model,
                    input_shape=env.observation_space.shape,
                    frame_buffer_size=3, warmup_actions=4)
 
