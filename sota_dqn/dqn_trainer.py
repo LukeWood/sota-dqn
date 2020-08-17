@@ -105,6 +105,9 @@ class DQNTrainer(DQNBase):
 
         samples = self.memory.sample(self.replay_batch_size)
 
+        states = []
+        targets = []
+
         for i, sample in enumerate(samples):
             state, action, reward, new_state, done = sample
             target = self.target_model.predict(state)
@@ -113,8 +116,10 @@ class DQNTrainer(DQNBase):
             else:
                 q_next = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + q_next*self.gamma
-            self.model.fit(state,
-                           target, epochs=self.epochs_per_batch, verbose=0)
+            states.append(state)
+            targets.append(target)
+        self.model.fit(states,
+                       targets, epochs=self.epochs_per_batch, verbose=0)
 
     def train(self, episodes=1, skip=0, max_steps=None,
               print_every=5):
