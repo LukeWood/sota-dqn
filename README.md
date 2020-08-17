@@ -70,6 +70,8 @@ python examples/basic/dqn_inference.py
 _Cartpole-V1 after training_
 
 ## Ms Pacman
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LukeWood/sota-dqn/blob/master/colab/CNN_Example.ipynb)
+
 This example builds on on the foundations set in the basic example.
 In the Ms Pacman example the raw image data is returned from the environment at each step.
 Preprocessing converts the images to gray scale to reduce the dimensionality of the input space.
