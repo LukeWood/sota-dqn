@@ -2,7 +2,8 @@
 
 sota_dqn is an opinionated deep Q network library focused on productive implementation.
 
-sota_dqn makes state of the art Reinforcement Learning easy and productive to use.
+sota_dqn provides the right amount of abstraction around state of the art Reinforcement Learning.
+Reinforcement learning is _hard_, SOTA does not intend to abstract all of the details away from the problem.
 Methods such as [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952) and fixed q target training are implemented by default.
 
 Other methods are under consideration for implementation such as:
