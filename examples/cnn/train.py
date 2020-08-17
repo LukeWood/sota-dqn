@@ -68,6 +68,7 @@ dqn = DQNTrainer(
     model=model,
     observation_preprocessors=[grayscale],
     replay_batch_size=12,
+    epsilon_decay=0.995,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
     frame_buffer_size=frame_buffer,
