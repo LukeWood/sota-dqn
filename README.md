@@ -71,7 +71,7 @@ python examples/basic/dqn_inference.py
 _Cartpole-V1 after training_
 
 ## Ms Pacman
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LukeWood/sota-dqn/blob/master/colab/CNN_Example.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LukeWood/sota-dqn/blob/master/colab/Ms_Pacman_GPU.ipynb)
 
 _A GPU is highly recommended for training this model_.
 
