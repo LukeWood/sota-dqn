@@ -3,27 +3,20 @@ import gym
 import os
 import atexit
 
-from rich.table import Table
-from rich.console import Console
 import tensorflow as tf
-import numpy as np
 
 from tensorflow.keras import Input
 from tensorflow.keras.layers import Concatenate, Dense, Reshape, Flatten
 import tensorflow.keras as keras
 
-import seaborn as sns
-import matplotlib.pyplot as plt
+from constants import persistence_file
 
-import matplotlib as mpl
-mpl.use('Agg')
-
+from callbacks import clear_console, track_reward, plot, save_model, \
+    append_row, print_table
 
 env = gym.make("CartPole-v1")
 frame_buffer = 3
 input_shape = env.observation_space.shape
-
-persistence_file = "cartpole.model"
 
 
 def get_model():
@@ -66,46 +59,6 @@ def get_model():
 
 model = get_model()
 keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
-episodes = Table(show_header=True)
-all_rewards = []
-console = Console()
-episodes.add_column("Episode")
-episodes.add_column("Average Reward")
-episodes.add_column("Episode Reward")
-episodes.add_column("Epsilon")
-
-
-def track_reward(dqn, _episode, episode_reward):
-    all_rewards.append(episode_reward)
-
-
-def append_row(dqn, episode, episode_reward):
-    episodes.add_row(
-        str(dqn.episodes_run),
-        str(np.average(all_rewards)),
-        str(episode_reward),
-        str(dqn.epsilon))
-
-
-def clear_console(_1, _2, _3):
-    console.clear()
-
-
-def print_table(_dqn, _episode, _episode_reward):
-    console.print(episodes)
-
-
-def plot(dqn, episode, episode_reward):
-    sns.lineplot(x=range(len(all_rewards)),
-                 y=all_rewards)
-
-    plt.savefig("media/cartpole_rewards.png")
-
-
-def save_model(dqn, _episode=None, _episode_reward=None):
-    dqn.model.save(persistence_file)
-    print("Saved model to", persistence_file)
-
 
 atexit.register(lambda: model.save(persistence_file))
 
@@ -115,6 +68,8 @@ dqn = DQNTrainer(
     model=model,
     replay_batch_size=64,
     epochs_per_batch=1,
+    epsilon_decay=0.99,
+    epsilon=0.1,
     frame_buffer_size=frame_buffer,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
