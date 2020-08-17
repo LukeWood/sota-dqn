@@ -29,7 +29,12 @@ class DQNTrainer(DQNBase):
                  frame_buffer_size=1,
 
                  observation_preprocessors=[],
-                 episode_callbacks=[],
+
+                 pre_episode_callbacks=[],
+                 post_episode_callbacks=[],
+
+                 pre_step_callbacks=[],
+                 post_step_callbacks=[],
 
                  # Hyper parameters
                  gamma=0.85,
@@ -53,8 +58,9 @@ class DQNTrainer(DQNBase):
         self.memory = memory
 
         self.episodes_run = 0
-        self.all_rewards = []
-        self.average_reward = 0
+
+        self.steps = 0
+        self.average_step_time = 0
 
         self.gamma = gamma
         self.epsilon = epsilon
@@ -64,7 +70,11 @@ class DQNTrainer(DQNBase):
         self.replay_batch_size = replay_batch_size
         self.epochs_per_batch = epochs_per_batch
 
-        self.episode_callbacks = episode_callbacks
+        self.pre_episode_callbacks = pre_episode_callbacks
+        self.post_episode_callbacks = post_episode_callbacks
+
+        self.pre_step_callbacks = pre_step_callbacks
+        self.post_step_callbacks = post_step_callbacks
 
         # tf.keras.models.clone_model does not copy weights
         self.target_model = tf.keras.models.clone_model(self.model)
@@ -106,7 +116,7 @@ class DQNTrainer(DQNBase):
             self.model.fit(state,
                            target, epochs=self.epochs_per_batch, verbose=0)
 
-    def train(self, episodes=1, skip=0, max_steps=None, visualize=False,
+    def train(self, episodes=1, skip=0, max_steps=None,
               print_every=5):
         for trial in range(episodes):
             self.add_frame(self.env.reset())
@@ -114,7 +124,14 @@ class DQNTrainer(DQNBase):
             steps = 1
             done = False
             total_reward = 0
+
+            for callback in self.pre_episode_callbacks:
+                callback(self, self.episodes_run)
+
             while not done:
+                for callback in self.pre_step_callbacks:
+                    callback(self)
+
                 steps = steps + 1
 
                 cur_state = self.buffer_to_input()
@@ -129,9 +146,6 @@ class DQNTrainer(DQNBase):
                     if done:
                         break
 
-                if visualize:
-                    self.env.render()
-
                 observation, freward, done, diagnostics = self.env.step(action)
                 reward = reward + freward
                 self.add_frame(observation)
@@ -143,13 +157,16 @@ class DQNTrainer(DQNBase):
                 self.copy_to_target()
                 self.decrement_epsilon()
 
+                for callback in self.post_step_callbacks:
+                    callback(self, self.episodes_run, steps, reward)
+
                 total_reward = total_reward + reward
                 if done:
                     break
                 if max_steps is not None and steps > max_steps:
                     break
 
-            self.episodes_run = self.episodes_run + 1
-
-            for callback in self.episode_callbacks:
+            for callback in self.post_episode_callbacks:
                 callback(self, self.episodes_run, total_reward)
+
+            self.episodes_run = self.episodes_run + 1

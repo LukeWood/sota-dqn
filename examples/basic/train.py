@@ -1,3 +1,6 @@
+import numpy as np
+import time
+import cProfile
 from sota_dqn import DQNTrainer, BasicReplayMemory
 import gym
 import os
@@ -63,18 +66,37 @@ keras.utils.plot_model(model, "media/basic_model.png", show_shapes=True)
 atexit.register(lambda: model.save(persistence_file))
 
 
+t = 0
+all_times = []
+
+
+def step_start(dqn):
+    global t
+    t = time.time()*1000
+
+
+def step_end(dqn, _episode, steps, reward):
+    n = time.time()*1000
+    all_times.append(n-t)
+
+
+def print_avg_time(dqn, _1, _2):
+    print("Avg step time", np.average(all_times))
+
+
 dqn = DQNTrainer(
     env=env,
     model=model,
-    replay_batch_size=64,
+    replay_batch_size=12,
     epochs_per_batch=1,
-    epsilon_decay=0.99,
-    epsilon=0.1,
+    epsilon_decay=0.999,
     frame_buffer_size=frame_buffer,
     input_shape=input_shape,
     memory=BasicReplayMemory(2000),
-    episode_callbacks=[clear_console, track_reward,
-                       plot, save_model, append_row, print_table]
+    pre_step_callbacks=[step_start],
+    post_step_callbacks=[step_end],
+    post_episode_callbacks=[clear_console, track_reward,
+                            plot, save_model, append_row, print_table, print_avg_time]
 )
 
-dqn.train(episodes=40)
+dqn.train(episodes=40, max_steps=10)
