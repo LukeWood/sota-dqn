@@ -1,4 +1,4 @@
-# State of the Art Deep Q Networks
+# SOTA DQN
 
 sota_dqn is an opinionated deep Q network library focused on productive implementation.
 
