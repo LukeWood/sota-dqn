@@ -69,16 +69,3 @@ python examples/basic/dqn_inference.py
 ![trained sample video](media/trained-cartpole.gif)
 
 _Cartpole-V1 after training_
-
-## Ms Pacman
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LukeWood/sota-dqn/blob/master/colab/Ms_Pacman_GPU.ipynb)
-
-_A GPU is highly recommended for training this model_.
-
-This example builds on on the foundations set in the basic example.
-In the Ms Pacman example the raw image data is returned from the environment at each step.
-Preprocessing converts the images to gray scale to reduce the dimensionality of the input space.
-
-On top of this a convolutional model with the following architecture is used:
-![cnn architecture](media/cnn_model.png)
-
