@@ -1,6 +1,6 @@
 > ⚠ Warning ⚠
 
-This repository is experimental and is not ready for use.
+This repository is experimental and is not ready for production use.
 
 # SOTA DQN
 
